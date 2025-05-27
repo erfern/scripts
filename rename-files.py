@@ -5,9 +5,9 @@ import os
 
 
 def get_file_extension(file_name: str) -> str:
-    splitted_file_name = file_name.split('.')
-    if len(splitted_file_name) > 1:
-        return '.' + splitted_file_name[-1]
+    split_file_name = file_name.split('.')
+    if len(split_file_name) > 1:
+        return '.' + split_file_name[-1]
     return ''
 
 def get_numeric_units(sequence: list) -> int:

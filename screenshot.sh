@@ -1,12 +1,15 @@
 #!/usr/bin/bash
 
-function store_screenshot() {
-  tee ~/pictures/screenshots/$(date +%s).png | \
+store() {
+  tee "$HOME/pictures/screenshots/$(date +%s).png"
+}
+
+copy_to_clipboard() {
   xclip -selection clipboard -t image/png
 }
 
 case $1 in
-    area) maim -s -d 1 | store_screenshot;; 
-    screen) maim -d 1 | store_screenshot;;
+  area) maim -s -d 0.2 | store | copy_to_clipboard;; 
+  screen) maim -d 0.2 | store | copy_to_clipboard;;
 esac
 
