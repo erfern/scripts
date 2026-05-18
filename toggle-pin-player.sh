@@ -1,35 +1,34 @@
 #!/bin/bash
 
+get_window_size() {
+    hyprctl -j clients | jq --arg addr "$address" \
+      '.[] | select(.address == $addr) | .size'
+}
+
 pin_mpv() {
     address=$(jq -rc ".address" <<< "$mpv_player")
 
     hyprctl dispatch setprop address:$address no_anim 1
-
-    # FLOAT
     hyprctl dispatch togglefloating address:$address
 
-    # proportions are updated after it goes floating
     MONITOR=$(hyprctl -j monitors | jq -c ".[]")
     MONITOR_WIDTH=$(jq ".width" <<< "$MONITOR")
     MONITOR_HEIGHT=$(jq ".height" <<< "$MONITOR")
-    MONITOR_RESERVED=$(jq ".reserved[1]" <<< "$MONITOR")
 
     GAPS_OUT=$(hyprctl getoption general:gaps_out -j | jq -r ".custom" | cut -d ' ' -f 1)
     BORDER_SIZE=$(hyprctl getoption general:border_size -j | jq -r ".int")
 
-    window=$(hyprctl -j clients | jq --arg addr "$address" '.[] | select(.address == $addr)')
-    window_width=$(jq -c ".size[0]" <<< "$window") 
-    window_height=$(jq -c ".size[1]" <<< "$window") 
+    # proportions's been updated after making the window float
+    window_size=$(get_window_size)
+    window_width=$(jq ".[0]" <<< "$window_size")
+    window_height=$(jq ".[1]" <<< "$window_size")
+
     x=$(( $MONITOR_WIDTH - $window_width - $GAPS_OUT - $BORDER_SIZE ))
     y=$(( $MONITOR_HEIGHT - $window_height - $GAPS_OUT - $BORDER_SIZE ))
 
     hyprctl dispatch resizewindowpixel exact "$window_width $window_height", address:$address
-
     hyprctl dispatch movewindowpixel exact "$x $y", address:$address
-
-    # PIN
     hyprctl dispatch pin address:$address
-
     hyprctl dispatch setprop address:$address no_anim 0
 }
 
