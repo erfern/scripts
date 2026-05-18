@@ -50,8 +50,36 @@ unpin_firefox_player() {
 }
 
 pin_firefox_player() {
-    address=$(jq -r ".address" <<< "$firefox_window")
-    hyprctl dispatch sendshortcut CTRL SHIFT, bracketright, address:$address 
+    ff_address=$(jq -r ".address" <<< "$firefox_window")
+
+    # Open pip player at the workspace set by hyprland's windowrules
+    hyprctl dispatch sendshortcut CTRL SHIFT, bracketright, address:$ff_address
+
+
+    sleep 0.3  # 0.2 works 0.1 doesnt
+    address=$(hyprctl -j clients | jq -r '.[] | select(.class == "firefox" and .title == "Picture-in-Picture") | .address')
+
+    hyprctl dispatch togglefloating address:$address
+
+    # CANNOT BE DYNAMIC.
+    # After resizing it once, firefox wont bother to resize to match the video anymore.
+    window_width=336
+    window_height=189
+
+    hyprctl dispatch resizewindowpixel exact "$window_width $window_height", address:$address
+
+    MONITOR=$(hyprctl -j monitors | jq -c ".[]")
+    MONITOR_WIDTH=$(jq ".width" <<< "$MONITOR")
+    MONITOR_HEIGHT=$(jq ".height" <<< "$MONITOR")
+
+    GAPS_OUT=$(hyprctl getoption general:gaps_out -j | jq -r ".custom" | cut -d ' ' -f 1)
+    BORDER_SIZE=$(hyprctl getoption general:border_size -j | jq -r ".int")
+
+    x=$(( $MONITOR_WIDTH - $window_width - $GAPS_OUT - $BORDER_SIZE ))
+    y=$(( $MONITOR_HEIGHT - $window_height - $GAPS_OUT - $BORDER_SIZE ))
+
+    hyprctl dispatch movewindowpixel exact "$x $y", address:$address
+    hyprctl dispatch pin address:$address
 
     # When a window out of the current workspace is pinned,
     # it's not added to the current workspace properly
