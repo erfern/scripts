@@ -5,6 +5,21 @@ get_window_size() {
       '.[] | select(.address == $addr) | .size'
 }
 
+get_mpv_window_size() {
+    hyprctl -j clients | jq --arg addr "$address" \
+      '.[] | select(.address == $addr) | .size'
+}
+
+get_firefox_window_size() {
+    echo '[336, 189]'
+}
+
+declare -A window_size_map=(
+  [firefox]=get_firefox_window_size
+  [mpv]=get_mpv_window_size
+  )
+
+
 pin_mpv() {
     address=$(jq -rc ".address" <<< "$mpv_player")
 
