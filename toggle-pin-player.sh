@@ -14,6 +14,35 @@ get_firefox_window_size() {
     echo '[336, 189]'
 }
 
+pin() {
+    local address="$1"
+    local player="$2"
+
+    hyprctl dispatch setprop address:$address no_anim 1
+
+    hyprctl dispatch togglefloating address:$address
+
+    MONITOR=$(hyprctl -j monitors | jq -c ".[]")
+    MONITOR_WIDTH=$(jq ".width" <<< "$MONITOR")
+    MONITOR_HEIGHT=$(jq ".height" <<< "$MONITOR")
+
+    GAPS_OUT=$(hyprctl getoption general:gaps_out -j | jq -r ".custom" | cut -d ' ' -f 1)
+    BORDER_SIZE=$(hyprctl getoption general:border_size -j | jq -r ".int")
+
+    window_size=$(${window_size_map[$player]})
+    window_width=$(jq '.[0]' <<< "$window_size")
+    window_height=$(jq '.[1]' <<< "$window_size")
+
+    x=$(( $MONITOR_WIDTH - $window_width - $GAPS_OUT - $BORDER_SIZE ))
+    y=$(( $MONITOR_HEIGHT - $window_height - $GAPS_OUT - $BORDER_SIZE ))
+
+    hyprctl dispatch resizewindowpixel exact "$window_width $window_height", address:$address
+    hyprctl dispatch movewindowpixel exact "$x $y", address:$address
+    hyprctl dispatch pin address:$address
+
+    hyprctl dispatch setprop address:$address no_anim 0
+}
+
 declare -A window_size_map=(
   [firefox]=get_firefox_window_size
   [mpv]=get_mpv_window_size
