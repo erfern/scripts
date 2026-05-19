@@ -39,20 +39,12 @@ pin() {
     hyprctl dispatch pin address:$address
 }
 
-unpin_mpv() {
-    address=$(jq -rc ".address" <<< "$mpv_player")
-    hyprctl dispatch setprop address:$address no_anim 1
+unpin() {
+    local address="$1"
 
     hyprctl dispatch pin address:$address
-    hyprctl dispatch movetoworkspacesilent 5, address:$address
     hyprctl dispatch togglefloating address:$address
-
-    hyprctl dispatch setprop address:$address no_anim 0
-}
-
-unpin_firefox_player() {
-    address=$(jq -rc ".address" <<< "$firefox_player")
-    hyprctl dispatch sendshortcut , Escape, address:$address
+    hyprctl dispatch movetoworkspacesilent 5, address:$address
 }
 
 clients=$(hyprctl -j clients)
