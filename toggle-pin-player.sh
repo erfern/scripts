@@ -43,19 +43,22 @@ unpin() {
     local address="$1"
 
     hyprctl dispatch pin address:$address
-    hyprctl dispatch togglefloating address:$address
     hyprctl dispatch movetoworkspacesilent 5, address:$address
+    hyprctl dispatch togglefloating address:$address
 }
 
-clients=$(hyprctl -j clients)
+active_player=$(
+  hyprctl activewindow -j |
+  jq -r '
+      select(
+          .class == "mpv" or
+          (.class == "firefox" and .title == "Picture-in-Picture")
+      )'
+)
 
-mpv_player=$(jq -r '.[] | select(.class == "mpv")' <<< "$clients")
-[[ -n $mpv_player ]] && {
-    jq -e ".pinned" <<< "$mpv_player" >/dev/null && unpin_mpv || pin_mpv
-} && exit
+address=$(jq -r ".address" <<< "$active_player")
+class=$(jq -r ".class" <<< "$active_player")
 
-firefox_player=$(jq -r '.[] | select(.class == "firefox" and .title == "Picture-in-Picture")' <<< "$clients")
-[[ -n $firefox_player ]] && unpin_firefox_player && exit
+[[ ! "$class" =~ (mpv|firefox) ]] && exit
 
-firefox_window=$(jq -r '.[] | select(.class == "firefox" and .title != "Picture-in-Picture")' <<< "$clients")
-[[ -n $firefox_window ]] && pin_firefox_player && exit
+jq -e ".pinned" <<< "$active_player" >/dev/null && unpin $address || pin $address $class
