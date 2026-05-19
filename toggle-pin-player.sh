@@ -1,10 +1,5 @@
 #!/bin/bash
 
-get_window_size() {
-    hyprctl -j clients | jq --arg addr "$address" \
-      '.[] | select(.address == $addr) | .size'
-}
-
 get_mpv_window_size() {
     hyprctl -j clients | jq --arg addr "$address" \
       '.[] | select(.address == $addr) | .size'
@@ -13,6 +8,11 @@ get_mpv_window_size() {
 get_firefox_window_size() {
     echo '[336, 189]'
 }
+
+declare -A window_size_map=(
+  [firefox]=get_firefox_window_size
+  [mpv]=get_mpv_window_size
+  )
 
 pin() {
     local address="$1"
@@ -43,10 +43,6 @@ pin() {
     hyprctl dispatch setprop address:$address no_anim 0
 }
 
-declare -A window_size_map=(
-  [firefox]=get_firefox_window_size
-  [mpv]=get_mpv_window_size
-  )
 
 
 pin_mpv() {
