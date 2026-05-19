@@ -18,8 +18,6 @@ pin() {
     local address="$1"
     local player="$2"
 
-    hyprctl dispatch setprop address:$address no_anim 1
-
     hyprctl dispatch togglefloating address:$address
 
     MONITOR=$(hyprctl -j monitors | jq -c ".[]")
@@ -39,20 +37,6 @@ pin() {
     hyprctl dispatch resizewindowpixel exact "$window_width $window_height", address:$address
     hyprctl dispatch movewindowpixel exact "$x $y", address:$address
     hyprctl dispatch pin address:$address
-
-    hyprctl dispatch setprop address:$address no_anim 0
-}
-
-
-
-pin_mpv() {
-    local address=$(jq -rc ".address" <<< "$mpv_player")
-    pin "$address" "mpv"
-}
-
-pin_firefox_player() {
-    local address=$(hyprctl -j clients | jq -r '.[] | select(.class == "firefox" and .title == "Picture-in-Picture") | .address')
-    pin "$address" "firefox"
 }
 
 unpin_mpv() {
