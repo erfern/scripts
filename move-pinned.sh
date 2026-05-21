@@ -1,7 +1,7 @@
 #!/bin/bash
 
 calculate_screen_edges() {
-    local MONITOR=$(hyprctl -j monitors | jq '.[]')
+    local MONITOR=$(hyprctl -j monitors | jq -c '.[]')
     local MONITOR_WIDTH=$(jq '.width' <<< "$MONITOR")
     local MONITOR_HEIGHT=$(jq '.height' <<< "$MONITOR")
     local MONITOR_RESERVED=$(jq '.reserved[1]' <<< "$MONITOR")

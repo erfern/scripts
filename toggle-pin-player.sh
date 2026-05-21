@@ -1,8 +1,7 @@
 #!/bin/bash
 
 get_mpv_window_size() {
-    hyprctl -j clients | jq --arg addr "$address" \
-        '.[] | select(.address == $addr) | .size'
+    hyprctl -j activewindow | jq -c '.size'
 }
 
 get_firefox_window_size() {
@@ -20,22 +19,22 @@ pin() {
 
     hyprctl dispatch togglefloating address:$address
 
-    local MONITOR=$(hyprctl -j monitors | jq -c ".[]")
-    local MONITOR_WIDTH=$(jq ".width" <<<"$MONITOR")
-    local MONITOR_HEIGHT=$(jq ".height" <<<"$MONITOR")
+    local MONITOR=$(hyprctl -j monitors | jq -c '.[]')
+    local MONITOR_WIDTH=$(jq '.width' <<< "$MONITOR")
+    local MONITOR_HEIGHT=$(jq '.height' <<< "$MONITOR")
 
     local GAPS_OUT=$(
         hyprctl getoption general:gaps_out -j |
-            jq -r ".custom" | cut -d ' ' -f 1
+            jq -r '.custom' | cut -d ' ' -f 1
     )
     local BORDER_SIZE=$(
         hyprctl getoption general:border_size -j |
-            jq -r ".int"
+            jq '.int'
     )
 
     local window_size=$(${window_size_map[$player]})
-    local window_width=$(jq '.[0]' <<<"$window_size")
-    local window_height=$(jq '.[1]' <<<"$window_size")
+    local window_width=$(jq '.[0]' <<< "$window_size")
+    local window_height=$(jq '.[1]' <<< "$window_size")
 
     local x=$(($MONITOR_WIDTH - $window_width - $GAPS_OUT - $BORDER_SIZE))
     local y=$(($MONITOR_HEIGHT - $window_height - $GAPS_OUT - $BORDER_SIZE))
@@ -60,9 +59,9 @@ active_player=$(
     )'
 )
 
-class=$(jq -r ".class" <<<"$active_player")
+class=$(jq -r '.class' <<< "$active_player")
 [[ ! "$class" =~ (mpv|firefox) ]] && exit
 
-address=$(jq -r ".address" <<< "$active_player")
-jq -e ".pinned" <<<"$active_player" >/dev/null &&
+address=$(jq -r '.address' <<< "$active_player")
+jq -e '.pinned' <<< "$active_player" >/dev/null &&
     unpin $address || pin $address $class
