@@ -5,11 +5,9 @@ if [ ! "$1" ]; then
 elif [ -d "$1" ]; then
   dir="$1"
   alacritty --class nvim -e /bin/nvim -c ":cd $dir" -c ":Telescope find_files" &
-elif [ -f "$1" ]; then
+else
   dir=$(dirname "$1")
   alacritty --class nvim -e /bin/nvim -c ":cd $dir" -- "$1" &
-else
-  /bin/nvim "$@"
 fi
 
 
